@@ -293,6 +293,9 @@ const DWORD RETURN_Idle_CWorld_ProcessPedsAfterPreRender = 0x53EA08;
 #define HOOKPOS_CAEAmbienceTrackManager__UpdateAmbienceTrackAndVolume_StartRadio    0x4D7198
 #define HOOKPOS_CAEAmbienceTrackManager__UpdateAmbienceTrackAndVolume_StopRadio     0x4D71E7
 
+#define HOOKPOS_CTaskSimpleUseGun_ControlGunMove 0x61E0CA
+DWORD RETURN_CTaskSimpleUseGun_ControlGunMove = 0x61E0D0;
+
 CPed*         pContextSwitchedPed = 0;
 CVector       vecCenterOfWorld;
 FLOAT         fFalseHeading;
@@ -537,6 +540,8 @@ void HOOK_CHud_RenderHealthBar();
 void HOOK_CAEAmbienceTrackManager__UpdateAmbienceTrackAndVolume_StartRadio();
 void HOOK_CAEAmbienceTrackManager__UpdateAmbienceTrackAndVolume_StopRadio();
 
+void HOOK_CTaskSimpleUseGun_ControlGunMove();
+
 CMultiplayerSA::CMultiplayerSA()
 {
     // Unprotect all of the GTASA code at once and leave it that way
@@ -772,6 +777,8 @@ void CMultiplayerSA::InitHooks()
                 (DWORD)HOOK_CAEAmbienceTrackManager__UpdateAmbienceTrackAndVolume_StartRadio, 5);
     HookInstall(HOOKPOS_CAEAmbienceTrackManager__UpdateAmbienceTrackAndVolume_StopRadio,
                 (DWORD)HOOK_CAEAmbienceTrackManager__UpdateAmbienceTrackAndVolume_StopRadio, 5);
+
+    HookInstall(HOOKPOS_CTaskSimpleUseGun_ControlGunMove, (DWORD)HOOK_CTaskSimpleUseGun_ControlGunMove, 6);
 
     // Disable GTA setting g_bGotFocus to false when we minimize
     MemSet((void*)ADDR_GotFocus, 0x90, pGameInterface->GetGameVersion() == VERSION_EU_10 ? 6 : 10);
@@ -7021,5 +7028,15 @@ void _declspec(naked) HOOK_CAEAmbienceTrackManager__UpdateAmbienceTrackAndVolume
         pop     ebx
         add     esp, 36
         retn
+    }
+}
+
+void _declspec(naked) HOOK_CTaskSimpleUseGun_ControlGunMove()
+{
+    _asm {
+        fmul    ds : 0x858CA8
+        fdiv    ds : 0xB7CB5C
+        fmul    kfTimeStepOriginal
+        jmp     RETURN_CTaskSimpleUseGun_ControlGunMove
     }
 }
